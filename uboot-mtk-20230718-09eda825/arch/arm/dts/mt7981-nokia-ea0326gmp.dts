@@ -23,11 +23,15 @@
 
 	mtd-layout {
 		layout@0 {
-			label = "default-86.5M";
+			label = "default";
 			// mtd layout for Nokia stock ubi or openwrt-stock/immortalwrt-stock firmware
-			cmdline = "console=ttyS0,115200n1 loglevel=8 swiotlb=512 firmware=0 mtd=ubi uart_en=1";
+			cmdline = "console=ttyS0,115200n1 loglevel=8 earlycon=uart8250,mmio32,0x11002000";
 			mtdids = "nmbm0=nmbm0";
 			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),2048k(Config),2048k(Config2),88576k(ubi)";
+			boot_part = "ubi"; // ubi boot part, default is "ubi"
+			factory_part = "ubi"; // factory firmware write part, default is "ubi"
+			sysupgrade_kernel_ubipart = "ubi"; // sysupgrade kernel write part (ubi volume: kernel), default is "ubi"
+			sysupgrade_rootfs_ubipart = "ubi"; // sysupgrade rootfs write part (ubi volume: rootfs, rootfs_data)
 		};
 
 		layout@1 {
