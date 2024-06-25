@@ -1,0 +1,110 @@
+name: Build U-BOOT
+
+on:
+  repository_dispatch:
+  ## Git Push 时触发编译(不要删除此行注释)
+  #push:
+  #  branches: 
+  #    - master
+  
+  ## 定时触发编译(不要删除此行注释)
+  #schedule:
+  #  - cron: 0 8 * * 5
+  
+  ## 重新点亮 Star 时触发编译(不要删除此行注释)
+  #watch:
+  #  types: [started]
+  
+  ### 界面控制部分 ( 以下内容请保持不变, 如有需要仅修改 options 选项 )
+  workflow_dispatch:
+    inputs:
+      Tempoary_SOC:
+        description: 'CPU型号'
+        default: 'mt7981'
+      Tempoary_BOARD:
+        description: '路由器型号'
+        default: 'nokia_ea0326gmp'
+      Tempoary_MULTI_LAYOUT:
+        description: '是否启用多种Flash分区布局支持'
+        default: '1'
+      UPLOAD_RELEASES:
+        description: '上传U_BOOT到 Releases'
+        default: 'true'
+        type: boolean
+      ### 界面控制部分结束 ( 以上内容请保持不变 )
+
+### 请按需求修改以下内容
+### 环境变量设置
+env:
+# 删除无用文件以增加编译空间
+  DELETE_USELESS_FILES: true
+# 删除早期的 workflow 任务
+  DELETE_OLD_WORKFLOW: false
+### 结束
+### 请按需求修改以上内容
+
+jobs:
+  Compile:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+      with:
+        fetch-depth: 0
+
+    - name: Initialize Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt update
+        sudo -E apt -y full-upgrade
+        sudo -E apt-get -y install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev
+        sudo -E systemctl daemon-reload
+        sudo -E apt -y autoremove --purge
+        sudo -E apt clean
+        sudo timedatectl set-timezone "Asia/Shanghai"
+
+    - name: Build U-BOOT
+      id: compile
+      run: |
+        SOC=${{ github.event.inputs.Tempoary_SOC }} BOARD=${{ github.event.inputs.Tempoary_BOARD }} MULTI_LAYOUT=${{ github.event.inputs.Tempoary_MULTI_LAYOUT }} ./build.sh
+
+    - name: Upload U_BOOT to Release
+      uses: svenstaro/upload-release-action@v2
+      if: ${{ github.event.inputs.UPLOAD_RELEASES }} == 'true' && !cancelled()
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: output/*
+        file_glob: true
+        tag: AutoUpdate-U-BOOT
+        overwrite: true
+        
+    - name: Refresh API (1/2)
+      if: ${{ github.event.inputs.UPLOAD_RELEASES }} == 'true' && !cancelled()
+      run: |
+        wget https://api.github.com/repos/${{github.repository}}/releases/tags/AutoUpdate-U-BOOT -O API
+        
+    - name: Refresh API (2/2)
+      if: ${{ github.event.inputs.UPLOAD_RELEASES }} == 'true' && !cancelled()
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./API
+        file_glob: true
+        tag: AutoUpdate-U-BOOT
+        overwrite: true
+
+    - name: Delete old Workflow Runs
+      continue-on-error: true
+      if: env.DELETE_OLD_WORKFLOW == 'true' && !cancelled()
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 3
+          keep_minimum_runs: 0
