@@ -83,6 +83,7 @@ if [ -f "$ATF_DIR/build/${SOC}/release/fip.bin" ]; then
 	if [ "$multilayout" = "1" ]; then
 		FIP_NAME="${FIP_NAME}-multi-layout"
 	fi
+	FIP_NAME="${FIP_NAME}-$(date +"%Y-%m-%d-%H-%M")"
 	cp -f "$ATF_DIR/build/${SOC}/release/fip.bin" "output/${FIP_NAME}.bin"
 	echo "$FIP_NAME build done"
 else
@@ -91,7 +92,7 @@ else
 fi
 if grep -q "CONFIG_TARGET_ALL_NO_SEC_BOOT=y" "$ATF_DIR/configs/$ATF_CFG"; then
 	if [ -f "$ATF_DIR/build/${SOC}/release/bl2.img" ]; then
-		BL2_NAME="${SOC}_${BOARD}-bl2"
+		BL2_NAME="${SOC}_${BOARD}-bl2-$(date +"%Y-%m-%d-%H-%M")"
 		cp -f "$ATF_DIR/build/${SOC}/release/bl2.img" "output/${BL2_NAME}.bin"
 		echo "$BL2_NAME build done"
 	else
