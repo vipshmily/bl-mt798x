@@ -29,7 +29,7 @@
 			gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
 		};
 
-		button-wps {
+		button-mesh {
 			label = "mesh";
 			gpios = <&gpio 0 GPIO_ACTIVE_LOW>;
 		};
@@ -64,7 +64,7 @@
 		};
 
 		led-5 {
-			label = "green:wps";
+			label = "green:mesh";
 			gpios = <&gpio 9 GPIO_ACTIVE_LOW>;
 		};
 	};
