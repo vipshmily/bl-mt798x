@@ -30,7 +30,7 @@
 		};
 
 		button-wps {
-			label = "mesh";
+			label = "wps || mesh";
 			gpios = <&gpio 0 GPIO_ACTIVE_LOW>;
 		};
 	};
@@ -64,7 +64,7 @@
 		};
 
 		led-5 {
-			label = "green:wps";
+			label = "green:wps || mesh";
 			gpios = <&gpio 9 GPIO_ACTIVE_LOW>;
 		};
 	};
